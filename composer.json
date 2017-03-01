@@ -12,7 +12,7 @@
         "typo3/cms": "^7.6"
     },
     "replace": {
-        "folder-cobj": "self.version",
+        "folder_cobj": "self.version",
         "typo3-ter/folder-cobj": "self.version"
     },
     "extra": {
@@ -34,7 +34,7 @@
     "scripts": {
         "post-autoload-dump": [
             "mkdir -p .Build/Web/typo3conf/ext/",
-            "[ -L .Build/Web/typo3conf/ext/folder-cobj ] || ln -snvf ../../../../. .Build/Web/typo3conf/ext/folder-cobj"
+            "[ -L .Build/Web/typo3conf/ext/folder_cobj ] || ln -snvf ../../../../. .Build/Web/typo3conf/ext/folder_cobj"
         ]
     }
 }
