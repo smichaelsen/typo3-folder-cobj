@@ -36,10 +36,11 @@ class FolderContentObject extends AbstractContentObject
      */
     protected function loadFolders(array $conf)
     {
-        $this->resolveStdWrapProperties(
+        $conf = $this->resolveStdWrapProperties(
             $conf,
             [
                 'containsModule',
+                'recursive',
                 'restrictToRootPage',
             ]
         );
@@ -50,11 +51,13 @@ class FolderContentObject extends AbstractContentObject
             $constraints[] = 'pages.module = ' . $this->getDatabaseConnection()->fullQuoteStr($conf['containsModule'], 'pages');
         }
         if ($conf['restrictToRootPage']) {
-            $pidList = [
-                $this->cObj->getData('leveluid:0'),
-            ];
+            $rootPage = (int) $this->cObj->getData('leveluid:0');
+            $pidList = [$rootPage];
             if ((int)$conf['recursive'] > 0) {
-
+                $pidList = array_merge(
+                    GeneralUtility::intExplode(',', $this->cObj->getTreeList($rootPage, $conf['recursive'])),
+                    $pidList
+                );
             }
             $constraints[] = 'pages.pid IN (' . join(',', $pidList) . ')';
         }
