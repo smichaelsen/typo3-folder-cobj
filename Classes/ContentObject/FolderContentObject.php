@@ -42,11 +42,20 @@ class FolderContentObject extends AbstractContentObject
                 'containsModule',
                 'recursive',
                 'restrictToRootPage',
+                'doktypes'
             ]
         );
-        $constraints = [
-            'pages.doktype = ' . PageRepository::DOKTYPE_SYSFOLDER,
-        ];
+        if (!empty($conf['doktypes'])) {
+            $doktypes = \implode(',', GeneralUtility::intExplode(',', $conf['doktypes']));
+            $constraints = [
+                'pages.doktype IN (' . $doktypes . ')',
+            ];
+        } else {
+            $constraints = [
+                'pages.doktype = ' . PageRepository::DOKTYPE_SYSFOLDER,
+            ];
+        }
+
         if (!empty($conf['containsModule'])) {
             $constraints[] = 'pages.module = ' . $this->getDatabaseConnection()->fullQuoteStr($conf['containsModule'], 'pages');
         }
