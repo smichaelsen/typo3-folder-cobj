@@ -45,7 +45,7 @@ class FolderContentObject extends AbstractContentObject
                 'doktypes'
             ]
         );
-        if (!empty($conf['doktypes'])) {
+        if (!empty($conf['doktypes'] ?? null)) {
             $doktypes = \implode(',', GeneralUtility::intExplode(',', $conf['doktypes']));
             $constraints = [
                 'pages.doktype IN (' . $doktypes . ')',
@@ -56,10 +56,10 @@ class FolderContentObject extends AbstractContentObject
             ];
         }
 
-        if (!empty($conf['containsModule'])) {
+        if ($conf['containsModule'] ?? false) {
             $constraints[] = 'pages.module = ' . $this->getDatabaseConnection()->fullQuoteStr($conf['containsModule'], 'pages');
         }
-        if ($conf['restrictToRootPage']) {
+        if ($conf['restrictToRootPage'] ?? false) {
             $rootPage = (int) $this->cObj->getData('leveluid:0');
             $pidList = [$rootPage];
             if ((int)$conf['recursive'] > 0) {
@@ -81,8 +81,8 @@ class FolderContentObject extends AbstractContentObject
     {
         foreach ($propertyNames as $propertyName) {
             $conf[$propertyName] = trim(isset($conf[$propertyName . '.'])
-                ? $this->cObj->stdWrap($conf[$propertyName], $conf[$propertyName . '.'])
-                : $conf[$propertyName]
+                ? $this->cObj->stdWrap($conf[$propertyName] ?? null, $conf[$propertyName . '.'])
+                : $conf[$propertyName] ?? null
             );
             if ($conf[$propertyName] === '') {
                 unset($conf[$propertyName]);
