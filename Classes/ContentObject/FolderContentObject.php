@@ -27,6 +27,10 @@ class FolderContentObject extends AbstractContentObject
             $cObj->start($folderRecord, 'pages');
             $content .= $cObj->cObjGetSingle($conf['renderObj'], $conf['renderObj.']);
         }
+        if (!empty($conf['stdWrap.'])) {
+            $cObj->start($this->getTyposcriptFrontendController()->cObj->data, 'pages');
+            $content = $cObj->stdWrap($content, $conf['stdWrap.']);
+        }
         return $content;
     }
 
@@ -42,7 +46,8 @@ class FolderContentObject extends AbstractContentObject
                 'containsModule',
                 'recursive',
                 'restrictToRootPage',
-                'doktypes'
+                'doktypes',
+                'limit'
             ]
         );
         if (!empty($conf['doktypes'] ?? null)) {
@@ -71,7 +76,12 @@ class FolderContentObject extends AbstractContentObject
             $constraints[] = 'pages.pid IN (' . join(',', $pidList) . ')';
         }
         $where = join(' AND ', $constraints) . $this->cObj->enableFields('pages');
-        $res = $this->getDatabaseConnection()->exec_SELECTquery('*', 'pages', $where);
+        if (empty($conf['limit'])) {
+            $limit = '';
+        } else {
+            $limit = $conf['limit'];
+        }
+        $res = $this->getDatabaseConnection()->exec_SELECTquery('*', 'pages', $where, '', '', $limit);
         while ($folderRecord = $this->getDatabaseConnection()->sql_fetch_assoc($res)) {
             yield $folderRecord;
         }
