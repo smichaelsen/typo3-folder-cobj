@@ -6,12 +6,12 @@ $EM_CONF['folder_cobj'] = [
     'category' => 'fe',
     'state' => 'stable',
     'author' => 'Sebastian Michaelsen',
-    'author_email' => '',
+    'author_email' => 'sebastian@michaelsen.io',
     'author_company' => '',
-    'version' => '1.0.0',
+    'version' => '1.0.1',
     'constraints' => [
         'depends' => [
-            'typo3' => '7.6.2-7.99.99',
+            'typo3' => '7.6.2-8.7.99',
         ],
     ],
 ];
