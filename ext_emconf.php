@@ -11,7 +11,7 @@ $EM_CONF['folder_cobj'] = [
     'version' => '1.2.1',
     'constraints' => [
         'depends' => [
-            'typo3' => '7.6.2-8.7.99',
+            'typo3' => '7.6.2-10.4.99',
         ],
     ],
 ];

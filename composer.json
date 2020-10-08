@@ -9,7 +9,8 @@
         }
     },
     "require": {
-        "typo3/cms": "^7.6 || ^8.7"
+        "typo3/cms-core": "^9.5 || ^10.4",
+        "friendsoftypo3/typo3db-legacy": "^1.1"
     },
     "replace": {
         "folder_cobj": "self.version",

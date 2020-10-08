@@ -1,12 +1,12 @@
 <?php
 namespace Smichaelsen\FolderCobj\ContentObject;
 
-use TYPO3\CMS\Core\Database\DatabaseConnection;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
-use TYPO3\CMS\Frontend\Page\PageRepository;
+use TYPO3\CMS\Core\Domain\Repository\PageRepository;
+use TYPO3\CMS\Typo3DbLegacy\Database\DatabaseConnection;
 
 class FolderContentObject extends AbstractContentObject
 {
@@ -40,6 +40,7 @@ class FolderContentObject extends AbstractContentObject
      */
     protected function loadFolders(array $conf)
     {
+        $pageRepository = GeneralUtility::makeInstance(PageRepository::class);
         $conf = $this->resolveStdWrapProperties(
             $conf,
             [
@@ -75,7 +76,7 @@ class FolderContentObject extends AbstractContentObject
             }
             $constraints[] = 'pages.pid IN (' . join(',', $pidList) . ')';
         }
-        $where = join(' AND ', $constraints) . $this->cObj->enableFields('pages');
+        $where = join(' AND ', $constraints) . $pageRepository->enableFields('pages');
         if (empty($conf['limit'])) {
             $limit = '';
         } else {
