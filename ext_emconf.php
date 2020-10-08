@@ -8,10 +8,10 @@ $EM_CONF['folder_cobj'] = [
     'author' => 'Sebastian Michaelsen',
     'author_email' => 'sebastian@michaelsen.io',
     'author_company' => '',
-    'version' => '1.2.1',
+    'version' => '2.0.0',
     'constraints' => [
         'depends' => [
-            'typo3' => '7.6.2-10.4.99',
+            'typo3' => '9.5.0-10.4.99',
         ],
     ],
 ];
