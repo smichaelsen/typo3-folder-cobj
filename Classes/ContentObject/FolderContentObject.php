@@ -1,23 +1,20 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Smichaelsen\FolderCobj\ContentObject;
 
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
-use TYPO3\CMS\Core\Domain\Repository\PageRepository;
-use TYPO3\CMS\Typo3DbLegacy\Database\DatabaseConnection;
 
 class FolderContentObject extends AbstractContentObject
 {
-
-    /**
-     * Renders the content object.
-     *
-     * @param array $conf
-     * @return string
-     */
-    public function render($conf = [])
+    public function render($conf = []): string
     {
         $content = '';
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
@@ -34,13 +31,8 @@ class FolderContentObject extends AbstractContentObject
         return $content;
     }
 
-    /**
-     * @param array $conf
-     * @return \Generator
-     */
-    protected function loadFolders(array $conf)
+    protected function loadFolders(array $conf): \Generator
     {
-        $pageRepository = GeneralUtility::makeInstance(PageRepository::class);
         $conf = $this->resolveStdWrapProperties(
             $conf,
             [
@@ -48,25 +40,26 @@ class FolderContentObject extends AbstractContentObject
                 'recursive',
                 'restrictToRootPage',
                 'doktypes',
-                'limit'
+                'limit',
             ]
         );
-        if (!empty($conf['doktypes'] ?? null)) {
-            $doktypes = \implode(',', GeneralUtility::intExplode(',', $conf['doktypes']));
-            $constraints = [
-                'pages.doktype IN (' . $doktypes . ')',
-            ];
-        } else {
-            $constraints = [
-                'pages.doktype = ' . PageRepository::DOKTYPE_SYSFOLDER,
-            ];
+
+        $doktypes = GeneralUtility::intExplode(',', $conf['doktypes'] ?: PageRepository::DOKTYPE_SYSFOLDER);
+
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('pages');
+
+        if ($conf['limit']) {
+            $queryBuilder->setMaxResults((int)$conf['limit']);
         }
 
-        if ($conf['containsModule'] ?? false) {
-            $constraints[] = 'pages.module = ' . $this->getDatabaseConnection()->fullQuoteStr($conf['containsModule'], 'pages');
+        $constraints = [
+            $queryBuilder->expr()->in('doktype', $queryBuilder->createNamedParameter($doktypes, Connection::PARAM_INT_ARRAY)),
+        ];
+        if ($conf['containsModule']) {
+            $constraints[] = $queryBuilder->expr()->eq('module', $queryBuilder->createNamedParameter($conf['containsModule'], \PDO::PARAM_STR));
         }
-        if ($conf['restrictToRootPage'] ?? false) {
-            $rootPage = (int) $this->cObj->getData('leveluid:0');
+        if ($conf['restrictToRootPage']) {
+            $rootPage = (int)$this->cObj->getData('leveluid:0');
             $pidList = [$rootPage];
             if ((int)$conf['recursive'] > 0) {
                 $pidList = array_merge(
@@ -74,26 +67,22 @@ class FolderContentObject extends AbstractContentObject
                     $pidList
                 );
             }
-            $constraints[] = 'pages.pid IN (' . join(',', $pidList) . ')';
+            $constraints[] = $queryBuilder->expr()->in('pid', $queryBuilder->createNamedParameter($pidList, Connection::PARAM_INT_ARRAY));
         }
-        $where = join(' AND ', $constraints) . $pageRepository->enableFields('pages');
-        if (empty($conf['limit'])) {
-            $limit = '';
-        } else {
-            $limit = $conf['limit'];
-        }
-        $res = $this->getDatabaseConnection()->exec_SELECTquery('*', 'pages', $where, '', '', $limit);
-        while ($folderRecord = $this->getDatabaseConnection()->sql_fetch_assoc($res)) {
+
+        $result = $queryBuilder->select('*')->from('pages')->where(...$constraints)->execute();
+        while ($folderRecord = $result->fetchAssociative()) {
             yield $folderRecord;
         }
     }
 
-    protected function resolveStdWrapProperties(array $conf, array $propertyNames)
+    protected function resolveStdWrapProperties(array $conf, array $propertyNames): array
     {
         foreach ($propertyNames as $propertyName) {
-            $conf[$propertyName] = trim(isset($conf[$propertyName . '.'])
+            $conf[$propertyName] = trim(
+                isset($conf[$propertyName . '.'])
                 ? $this->cObj->stdWrap($conf[$propertyName] ?? null, $conf[$propertyName . '.'])
-                : $conf[$propertyName] ?? null
+                : $conf[$propertyName] ?? ''
             );
             if ($conf[$propertyName] === '') {
                 unset($conf[$propertyName]);
@@ -106,18 +95,7 @@ class FolderContentObject extends AbstractContentObject
         return $conf;
     }
 
-    /**
-     * @return DatabaseConnection
-     */
-    protected function getDatabaseConnection()
-    {
-        return $GLOBALS['TYPO3_DB'];
-    }
-
-    /**
-     * @return TypoScriptFrontendController
-     */
-    protected function getTyposcriptFrontendController()
+    protected function getTyposcriptFrontendController(): TypoScriptFrontendController
     {
         return $GLOBALS['TSFE'];
     }
