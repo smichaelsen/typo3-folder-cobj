@@ -1,6 +1,6 @@
 <?php
 
-$EM_CONF['folder_cobj'] = [
+$EM_CONF[$_EXTKEY] = [
     'title' => 'FOLDER cObj',
     'description' => 'TypoScript Content Object to load system folders',
     'category' => 'fe',
