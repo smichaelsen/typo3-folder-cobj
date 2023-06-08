@@ -44,21 +44,21 @@ class FolderContentObject extends AbstractContentObject
             ]
         );
 
-        $doktypes = GeneralUtility::intExplode(',', $conf['doktypes'] ?: PageRepository::DOKTYPE_SYSFOLDER);
+        $doktypes = GeneralUtility::intExplode(',', $conf['doktypes'] ?? PageRepository::DOKTYPE_SYSFOLDER);
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('pages');
 
-        if ($conf['limit']) {
+        if ($conf['limit'] ?? 0) {
             $queryBuilder->setMaxResults((int)$conf['limit']);
         }
 
         $constraints = [
             $queryBuilder->expr()->in('doktype', $queryBuilder->createNamedParameter($doktypes, Connection::PARAM_INT_ARRAY)),
         ];
-        if ($conf['containsModule']) {
+        if ($conf['containsModule'] ?? false) {
             $constraints[] = $queryBuilder->expr()->eq('module', $queryBuilder->createNamedParameter($conf['containsModule'], \PDO::PARAM_STR));
         }
-        if ($conf['restrictToRootPage']) {
+        if ($conf['restrictToRootPage'] ?? false) {
             $rootPage = (int)$this->cObj->getData('leveluid:0');
             $pidList = [$rootPage];
             if ((int)$conf['recursive'] > 0) {
