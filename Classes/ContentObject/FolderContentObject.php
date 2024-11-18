@@ -63,7 +63,7 @@ class FolderContentObject extends AbstractContentObject
             $pidList = [$rootPage];
             if ((int)$conf['recursive'] > 0) {
                 $pidList = array_merge(
-                    GeneralUtility::intExplode(',', $this->cObj->getTreeList($rootPage, $conf['recursive'])),
+                    $this->getTyposcriptFrontendController()->sys_page->getDescendantPageIdsRecursive($rootPage, 100),
                     $pidList
                 );
             }
